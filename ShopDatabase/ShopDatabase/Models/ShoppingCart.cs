@@ -11,7 +11,7 @@ namespace ShopDatabase.Models
         public Guid Id { get; set; }
         public double Sum { get; set; }
         public DateTime DateCreated { get; set; }
-        public List<Food> Items { get; set; }
+        public virtual ICollection<Food> Items { get; set; }
 
         public ShoppingCart()
         {
@@ -21,5 +21,10 @@ namespace ShopDatabase.Models
             Id = Guid.NewGuid();
         }
 
+        public void AddToCart(Food food)
+        {
+            Items.Add(food);
+            Sum += food.Price;
+        }
     }
 }

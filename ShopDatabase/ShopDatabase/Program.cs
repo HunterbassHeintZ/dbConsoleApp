@@ -19,18 +19,32 @@ namespace ShopDatabase
             };
 
             ShoppingCart newCart = new ShoppingCart();
-
+            
+            ChooseFood(groceries, newCart);
+            while (Console.ReadLine() == "Yes")
+            {
+                ChooseFood(groceries, newCart);
+            }
+            
+            /*
             foreach (var food in groceries)
             {
                 newCart.Items.Add(food);
             }
+            */
 
             using (var db = new ShopDbContext())
             {
+                var cartsWithZeroSum = db.ShoppingCarts.Where(x => x.Sum <= 5);
+                foreach (var cart in cartsWithZeroSum)
+                {
+                    db.ShoppingCarts.Remove(cart);
+                }
+
                 db.ShoppingCarts.Add(newCart);
                 db.SaveChanges();
 
-                var carts = db.ShoppingCarts;
+                var carts = db.ShoppingCarts.Include("Items").OrderByDescending(x => x.DateCreated).ToList();
                 foreach (var cart in carts)
                 {
                     Console.WriteLine($"Shopping Cart created on {cart.DateCreated}");
@@ -38,9 +52,22 @@ namespace ShopDatabase
                     {
                         Console.WriteLine($"Name: {food.Name}  Price: {food.Price}");
                     }
+                    Console.WriteLine($"Total: {cart.Sum}");
                 }
             }
+
+
+
             Console.ReadKey();
+        }
+
+        private static void ChooseFood(List<Food> groceries, ShoppingCart newCart)
+        {
+            Console.WriteLine("What do you want to buy?");
+            string foodName = Console.ReadLine();
+            Food chosenFood = groceries.FirstOrDefault(x => x.Name == foodName);
+            newCart.AddToCart(chosenFood);
+            Console.WriteLine("Anything else? Yes/No");
         }
     }
 }
